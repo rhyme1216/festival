@@ -12,13 +12,71 @@
       background: #f7f7fb;
       color: #111827;
     }
+    .layout {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 12px 40px;
+      gap: 16px;
+      box-sizing: border-box;
+    }
+    .sidebar {
+      width: 180px;
+      max-width: 35vw;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+      padding: 16px 12px;
+      box-sizing: border-box;
+    }
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 8px;
+      padding: 0 8px;
+    }
+    .nav-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 14px;
+    }
+    .nav-item a,
+    .nav-item span {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 999px;
+      text-decoration: none;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.12s ease-out, color 0.12s ease-out;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .nav-item a:hover {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+    .nav-item.active span {
+      background: #2563eb;
+      color: #ffffff;
+      font-weight: 600;
+      cursor: default;
+    }
     .container {
       max-width: 960px;
-      margin: 24px auto 40px;
+      width: 100%;
+      margin: 0;
       padding: 24px 20px 32px;
       background: #ffffff;
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+      box-sizing: border-box;
     }
     h1 {
       font-size: 26px;
@@ -162,7 +220,16 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-title">工具选择</div>
+      <ul class="nav-list">
+        <li class="nav-item"><a href="index.html">春节工具</a></li>
+        <li class="nav-item active"><span>自定义工具</span></li>
+      </ul>
+    </nav>
+
+    <div class="container">
     <h1>通用节假日请假策略规划工具</h1>
     <p class="hint">
       适用于任意节假日：先选 <strong>法定节日区间</strong>，再选其前后的
@@ -251,6 +318,7 @@
 
     <div class="footer">
       通用版 · 所有计算在本地浏览器完成，不会上传任何数据
+    </div>
     </div>
   </div>
 
