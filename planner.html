@@ -258,18 +258,11 @@
           <input id="pre-start" type="date" />
         </div>
         <div class="field">
-          <label for="pre-end">节前可请假结束</label>
-          <input id="pre-end" type="date" />
-        </div>
-        <div class="field">
-          <label for="post-start">节后可请假开始 <span class="tag">可选</span></label>
-          <input id="post-start" type="date" />
-        </div>
-        <div class="field">
-          <label for="post-end">节后可请假结束</label>
+          <label for="post-end">节后可请假结束 <span class="tag">可选</span></label>
           <input id="post-end" type="date" />
         </div>
       </div>
+      <p class="hint">说明：节前可请假区间为「节前可请假开始」~「法定节日开始前一天」；节后可请假区间为「法定节日结束后一天」~「节后可请假结束」。</p>
 
       <button class="btn btn-secondary" id="gen-days">生成候选日期列表</button>
       <p class="hint" style="margin-top: 6px;">点击后，会自动生成可请假日期列表，供你填写同事休假比例。</p>
@@ -414,24 +407,36 @@
       }
 
       const preStart = parseDateInput('pre-start');
-      const preEnd = parseDateInput('pre-end');
-      const postStart = parseDateInput('post-start');
       const postEnd = parseDateInput('post-end');
 
-      if (!preStart && !postStart) {
-        alert('至少需要设置一个“节前可请假区间”或“节后可请假区间”。');
+      if (!preStart && !postEnd) {
+        alert('至少需要设置一个“节前可请假开始”或“节后可请假结束”。');
         return;
       }
 
       let days = [];
 
-      if (preStart && preEnd && preEnd >= preStart) {
-        const arr = iterateDates(preStart, preEnd);
+      // 节前区间：preStart ~ (holidayStart - 1)
+      if (preStart) {
+        const preEndDate = new Date(holidayStart.getTime());
+        preEndDate.setDate(preEndDate.getDate() - 1);
+        if (preEndDate < preStart) {
+          alert('节前可请假开始必须早于法定节日开始。');
+          return;
+        }
+        const arr = iterateDates(preStart, preEndDate);
         days = days.concat(arr);
       }
 
-      if (postStart && postEnd && postEnd >= postStart) {
-        const arr = iterateDates(postStart, postEnd);
+      // 节后区间：(holidayEnd + 1) ~ postEnd
+      if (postEnd) {
+        const postStartDate = new Date(holidayEnd.getTime());
+        postStartDate.setDate(postStartDate.getDate() + 1);
+        if (postEnd < postStartDate) {
+          alert('节后可请假结束必须晚于法定节日结束。');
+          return;
+        }
+        const arr = iterateDates(postStartDate, postEnd);
         days = days.concat(arr);
       }
 
