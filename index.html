@@ -12,13 +12,71 @@
       background: #f7f7fb;
       color: #222;
     }
+    .layout {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 12px 40px;
+      gap: 16px;
+      box-sizing: border-box;
+    }
+    .sidebar {
+      width: 180px;
+      max-width: 35vw;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+      padding: 16px 12px;
+      box-sizing: border-box;
+    }
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 8px;
+      padding: 0 8px;
+    }
+    .nav-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 14px;
+    }
+    .nav-item a,
+    .nav-item span {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 999px;
+      text-decoration: none;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.12s ease-out, color 0.12s ease-out;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .nav-item a:hover {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+    .nav-item.active span {
+      background: #2563eb;
+      color: #ffffff;
+      font-weight: 600;
+      cursor: default;
+    }
     .container {
       max-width: 900px;
-      margin: 32px auto;
+      width: 100%;
+      margin: 0;
       padding: 24px 20px 40px;
       background: #fff;
       box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
       border-radius: 16px;
+      box-sizing: border-box;
     }
     h1 {
       font-size: 26px;
@@ -142,7 +200,16 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-title">工具选择</div>
+      <ul class="nav-list">
+        <li class="nav-item active"><span>春节工具</span></li>
+        <li class="nav-item"><a href="planner.html">自定义工具</a></li>
+      </ul>
+    </nav>
+
+    <div class="container">
     <h1>春节请假策略小工具（HTML 版）</h1>
     <p class="hint">
       根据同事最新的休假统计，结合你对
@@ -182,6 +249,7 @@
 
     <div class="footer">
       纯前端版 · 可直接用浏览器打开此 HTML 文件使用
+    </div>
     </div>
   </div>
 

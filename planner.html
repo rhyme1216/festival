@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>通用节假日请假策略规划工具</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f7f7fb;
+      color: #111827;
+    }
+    .container {
+      max-width: 960px;
+      margin: 24px auto 40px;
+      padding: 24px 20px 32px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    }
+    h1 {
+      font-size: 26px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 20px;
+      margin-top: 28px;
+      margin-bottom: 8px;
+      border-left: 4px solid #2563eb;
+      padding-left: 8px;
+    }
+    p, li {
+      line-height: 1.6;
+    }
+    .hint {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+    .section {
+      margin-top: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px 16px;
+      margin-top: 8px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 14px;
+    }
+    label {
+      font-weight: 500;
+      color: #374151;
+    }
+    input[type="date"],
+    input[type="number"],
+    input[type="text"] {
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      border: none;
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+      transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, background 0.08s;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      background: #1d4ed8;
+    }
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.45);
+    }
+    .btn-secondary {
+      background: #6b7280;
+      box-shadow: 0 2px 6px rgba(55, 65, 81, 0.35);
+    }
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+    .result-card {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
+      font-size: 14px;
+    }
+    .result-card strong {
+      font-size: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 6px 8px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+    tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+    code {
+      background: #f3f4f6;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .footer {
+      margin-top: 28px;
+      font-size: 12px;
+      color: #9ca3af;
+      text-align: right;
+    }
+    .tag {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #eef2ff;
+      color: #3730a3;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>通用节假日请假策略规划工具</h1>
+    <p class="hint">
+      适用于任意节假日：先选 <strong>法定节日区间</strong>，再选其前后的
+      <strong>可请假区间</strong>，输入可请假天数与同事休假比例，设置偏好权重，
+      自动计算最优请假策略。
+    </p>
+
+    <h2>1. 选择日期区间</h2>
+    <div class="section">
+      <p class="hint"><strong>说明：</strong>目前假设：在整体考虑区间内，除法定节日和你选择的年假外，其余日期都视为工作日（不额外区分周末和调休）。</p>
+      <div class="grid">
+        <div class="field">
+          <label for="holiday-start">法定节日开始</label>
+          <input id="holiday-start" type="date" />
+        </div>
+        <div class="field">
+          <label for="holiday-end">法定节日结束</label>
+          <input id="holiday-end" type="date" />
+        </div>
+      </div>
+
+      <p class="hint">可请假日期区间（任选其一或两端都选）：</p>
+      <div class="grid">
+        <div class="field">
+          <label for="pre-start">节前可请假开始 <span class="tag">可选</span></label>
+          <input id="pre-start" type="date" />
+        </div>
+        <div class="field">
+          <label for="pre-end">节前可请假结束</label>
+          <input id="pre-end" type="date" />
+        </div>
+        <div class="field">
+          <label for="post-start">节后可请假开始 <span class="tag">可选</span></label>
+          <input id="post-start" type="date" />
+        </div>
+        <div class="field">
+          <label for="post-end">节后可请假结束</label>
+          <input id="post-end" type="date" />
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" id="gen-days">生成候选日期列表</button>
+      <p class="hint" style="margin-top: 6px;">点击后，会自动生成可请假日期列表，供你填写同事休假比例。</p>
+    </div>
+
+    <h2>2. 输入可请假天数</h2>
+    <div class="section">
+      <div class="grid">
+        <div class="field">
+          <label for="total-vac">可请假总天数</label>
+          <input id="total-vac" type="number" min="1" step="1" value="3" />
+        </div>
+      </div>
+      <p class="hint">例：你有 3 天年假，则填 <code>3</code>；工具会从候选日期中挑选这 3 天。</p>
+    </div>
+
+    <h2>3. 输入同事休假比例</h2>
+    <div class="section">
+      <p class="hint">生成日期列表后，每个可请假日期填一个 <code>0~1</code> 的小数，或 <code>a/b</code>（如 <code>6/31</code>）。</p>
+      <div id="prob-table-wrap" class="section"></div>
+    </div>
+
+    <h2>4. 设置权重（偏好）</h2>
+    <div class="section">
+      <ul class="hint">
+        <li><strong>α（疲劳权重）</strong>：越大越不想太累（更惩罚连续工作段很长）。</li>
+        <li><strong>β（被打扰权重）</strong>：越大越不想休假被打扰（更惩罚在多数人上班的日子休假）。</li>
+      </ul>
+      <div class="grid">
+        <div class="field">
+          <label for="alpha">α：连续工作疲劳权重</label>
+          <input id="alpha" type="number" step="0.1" min="0.1" max="10" value="1.0" />
+        </div>
+        <div class="field">
+          <label for="beta">β：休假被打扰权重</label>
+          <input id="beta" type="number" step="0.1" min="0.1" max="10" value="1.0" />
+        </div>
+      </div>
+    </div>
+
+    <h2>5. 计算最优请假策略</h2>
+    <div class="section">
+      <button class="btn" id="calc-btn">计算 / 刷新推荐方案</button>
+      <div id="result"></div>
+    </div>
+
+    <div class="footer">
+      通用版 · 所有计算在本地浏览器完成，不会上传任何数据
+    </div>
+  </div>
+
+  <script>
+    // 状态：候选日期和其对应的同事休假概率
+    let candidateDays = []; // 日期字符串数组："YYYY-MM-DD"
+    let probValues = {};    // 映射：dateStr -> string（原始输入值）
+
+    function fmtDate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function parseDateInput(id) {
+      const el = document.getElementById(id);
+      if (!el || !el.value) return null;
+      const d = new Date(el.value + 'T00:00:00');
+      if (Number.isNaN(d.getTime())) return null;
+      return d;
+    }
+
+    function dateLessOrEqual(a, b) {
+      return a.getTime() <= b.getTime();
+    }
+
+    function iterateDates(start, end) {
+      const res = [];
+      let cur = new Date(start.getTime());
+      while (dateLessOrEqual(cur, end)) {
+        res.push(fmtDate(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      return res;
+    }
+
+    function uniqueSortedDates(dates) {
+      const set = new Set(dates);
+      const arr = Array.from(set);
+      arr.sort();
+      return arr;
+    }
+
+    function renderProbTable() {
+      const wrap = document.getElementById('prob-table-wrap');
+      wrap.innerHTML = '';
+
+      if (!candidateDays.length) {
+        const p = document.createElement('p');
+        p.className = 'hint';
+        p.textContent = '请先在上方选择日期区间并点击“生成候选日期列表”。';
+        wrap.appendChild(p);
+        return;
+      }
+
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>日期</th>
+          <th>同事休假比例（0~1 或 a/b）</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      for (const d of candidateDays) {
+        const tr = document.createElement('tr');
+        const tdDate = document.createElement('td');
+        tdDate.textContent = d;
+        const tdInput = document.createElement('td');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = `p-${d}`;
+        input.style.width = '120px';
+        input.value = probValues[d] ?? '';
+        tdInput.appendChild(input);
+        tr.appendChild(tdDate);
+        tr.appendChild(tdInput);
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+    }
+
+    function generateCandidateDays() {
+      const holidayStart = parseDateInput('holiday-start');
+      const holidayEnd = parseDateInput('holiday-end');
+      if (!holidayStart || !holidayEnd || holidayEnd < holidayStart) {
+        alert('请正确选择法定节日的起止日期。');
+        return;
+      }
+
+      const preStart = parseDateInput('pre-start');
+      const preEnd = parseDateInput('pre-end');
+      const postStart = parseDateInput('post-start');
+      const postEnd = parseDateInput('post-end');
+
+      if (!preStart && !postStart) {
+        alert('至少需要设置一个“节前可请假区间”或“节后可请假区间”。');
+        return;
+      }
+
+      let days = [];
+
+      if (preStart && preEnd && preEnd >= preStart) {
+        const arr = iterateDates(preStart, preEnd);
+        days = days.concat(arr);
+      }
+
+      if (postStart && postEnd && postEnd >= postStart) {
+        const arr = iterateDates(postStart, postEnd);
+        days = days.concat(arr);
+      }
+
+      if (!days.length) {
+        alert('可请假区间内没有任何日期，请检查日期设置。');
+        return;
+      }
+
+      const holidayStartStr = fmtDate(holidayStart);
+      const holidayEndStr = fmtDate(holidayEnd);
+
+      // 排除法定节日期间本身（这些天已经是放假，不占你的年假）
+      const filtered = days.filter(d => d < holidayStartStr || d > holidayEndStr);
+      if (!filtered.length) {
+        alert('候选日期全部落在法定节日区间内，请调整前后可请假区间。');
+        return;
+      }
+
+      // 记录当前输入值，以便重新渲染时保留
+      const newProbValues = {};
+      for (const d of filtered) {
+        const old = probValues[d];
+        if (old !== undefined) newProbValues[d] = old;
+      }
+      probValues = newProbValues;
+
+      candidateDays = uniqueSortedDates(filtered);
+      renderProbTable();
+    }
+
+    function parseProbability(text) {
+      const s = text.trim();
+      if (!s) return 0.0;
+      if (s.includes('/')) {
+        const parts = s.split('/', 2);
+        const a = parseFloat(parts[0]);
+        const b = parseFloat(parts[1]);
+        if (!Number.isFinite(a) || !Number.isFinite(b) || b === 0) {
+          throw new Error('比例格式错误');
+        }
+        return a / b;
+      }
+      const v = parseFloat(s);
+      if (!Number.isFinite(v)) throw new Error('小数格式错误');
+      return v;
+    }
+
+    function getProbabilities() {
+      const probs = {};
+      for (const d of candidateDays) {
+        const el = document.getElementById(`p-${d}`);
+        if (!el) continue;
+        const raw = el.value;
+        probValues[d] = raw;
+        if (!raw.trim()) {
+          probs[d] = 0.0;
+          continue;
+        }
+        const v = parseProbability(raw);
+        if (v < 0 || v > 1) {
+          alert(`${d} 的比例必须在 0~1 之间`);
+          throw new Error('out of range');
+        }
+        probs[d] = v;
+      }
+      return probs;
+    }
+
+    // 惩罚函数 w(n) = 1.3^(max(n-5, 0))
+    function w(n) {
+      return Math.pow(1.3, Math.max(n - 5, 0));
+    }
+
+    // 计算连续工作块长度
+    function work(vacationPlan, globalStartStr, globalEndStr, holidayStartStr, holidayEndStr) {
+      const vacSet = new Set(vacationPlan);
+
+      const start = new Date(globalStartStr + 'T00:00:00');
+      const end = new Date(globalEndStr + 'T00:00:00');
+
+      const workDays = [];
+      let cur = new Date(start.getTime());
+      while (cur.getTime() <= end.getTime()) {
+        const ds = fmtDate(cur);
+        if (ds >= holidayStartStr && ds <= holidayEndStr) {
+          // 法定节日：休息
+        } else if (!vacSet.has(ds)) {
+          workDays.push(ds);
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      if (!workDays.length) return [];
+
+      const blocks = [];
+      let blockStart = workDays[0];
+      let prev = workDays[0];
+
+      for (let i = 1; i < workDays.length; i++) {
+        const d = workDays[i];
+        const prevDate = new Date(prev + 'T00:00:00');
+        const curDate = new Date(d + 'T00:00:00');
+        const diffMs = curDate.getTime() - prevDate.getTime();
+        const diffDays = diffMs / (24 * 3600 * 1000);
+        if (diffDays === 1) {
+          prev = d;
+        } else {
+          const len = Math.round((new Date(prev + 'T00:00:00').getTime() - new Date(blockStart + 'T00:00:00').getTime()) / (24 * 3600 * 1000)) + 1;
+          blocks.push(len);
+          blockStart = prev = d;
+        }
+      }
+      const lenLast = Math.round((new Date(prev + 'T00:00:00').getTime() - new Date(blockStart + 'T00:00:00').getTime()) / (24 * 3600 * 1000)) + 1;
+      blocks.push(lenLast);
+      return blocks;
+    }
+
+    function combinations(arr, k) {
+      const res = [];
+      const cur = [];
+      function backtrack(start, remaining) {
+        if (remaining === 0) {
+          res.push(cur.slice());
+          return;
+        }
+        for (let i = start; i <= arr.length - remaining; i++) {
+          cur.push(arr[i]);
+          backtrack(i + 1, remaining - 1);
+          cur.pop();
+        }
+      }
+      backtrack(0, k);
+      return res;
+    }
+
+    function score(plan, probs, alpha, beta, globalStartStr, globalEndStr, holidayStartStr, holidayEndStr) {
+      const blocks = work(plan, globalStartStr, globalEndStr, holidayStartStr, holidayEndStr);
+      const fatigue = blocks.reduce((acc, n) => acc + w(n), 0);
+      const disturb = plan.reduce((acc, d) => acc + (1 - (probs[d] ?? 0)), 0);
+      const totalCost = alpha * fatigue + beta * disturb;
+      const sc = 1.0 / totalCost;
+      return { score: sc, fatigue, disturb };
+    }
+
+    function calculate() {
+      if (!candidateDays.length) {
+        alert('请先生成候选日期列表。');
+        return;
+      }
+
+      const totalVacEl = document.getElementById('total-vac');
+      let totalVac = parseInt(totalVacEl.value, 10);
+      if (!Number.isFinite(totalVac) || totalVac <= 0) {
+        alert('请填写一个大于 0 的可请假天数。');
+        return;
+      }
+      if (totalVac > candidateDays.length) {
+        alert('可请假总天数大于候选日期数量，请调整。');
+        return;
+      }
+
+      let probs;
+      try {
+        probs = getProbabilities();
+      } catch (e) {
+        return;
+      }
+
+      const alpha = parseFloat(document.getElementById('alpha').value) || 1.0;
+      const beta = parseFloat(document.getElementById('beta').value) || 1.0;
+      if (alpha <= 0 || beta <= 0) {
+        alert('α 和 β 必须为正数。');
+        return;
+      }
+
+      const holidayStart = parseDateInput('holiday-start');
+      const holidayEnd = parseDateInput('holiday-end');
+      if (!holidayStart || !holidayEnd) {
+        alert('请先选择法定节日区间。');
+        return;
+      }
+      const holidayStartStr = fmtDate(holidayStart);
+      const holidayEndStr = fmtDate(holidayEnd);
+
+      // 计算整体考虑区间：候选日期与法定节日共同的最小/最大日期
+      const allDays = candidateDays.concat([holidayStartStr, holidayEndStr]);
+      allDays.sort();
+      const globalStartStr = allDays[0];
+      const globalEndStr = allDays[allDays.length - 1];
+
+      const combs = combinations(candidateDays, totalVac);
+      if (combs.length > 200000) {
+        const cont = confirm(`需要评估的方案数为 ${combs.length} 个，可能会稍慢，是否继续？`);
+        if (!cont) return;
+      }
+
+      const rows = [];
+      let bestPlan = null;
+      let bestScore = null;
+
+      for (const plan of combs) {
+        const { score: sc, fatigue, disturb } = score(plan, probs, alpha, beta, globalStartStr, globalEndStr, holidayStartStr, holidayEndStr);
+        rows.push({ plan, score: sc, fatigue, disturb });
+        if (bestScore === null || sc > bestScore) {
+          bestScore = sc;
+          bestPlan = plan;
+        }
+      }
+
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '';
+
+      if (!bestPlan) {
+        const warn = document.createElement('div');
+        warn.className = 'result-card';
+        warn.textContent = '当前没有生成任何合法方案，请检查参数设置。';
+        resultDiv.appendChild(warn);
+        return;
+      }
+
+      const bestStr = bestPlan.join('、');
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      card.innerHTML = `
+        <strong>推荐最优请假方案：</strong> ${bestStr}<br/>
+        综合得分（越高越好）：<strong>${bestScore.toFixed(6)}</strong>
+      `;
+      resultDiv.appendChild(card);
+
+      const tableWrap = document.createElement('div');
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>方案</th>
+          <th>Score</th>
+          <th>疲劳成本</th>
+          <th>被打扰成本</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      const sorted = rows.sort((a, b) => b.score - a.score);
+      for (const row of sorted) {
+        const tr = document.createElement('tr');
+        const planStr = row.plan.join('、');
+        tr.innerHTML = `
+          <td>${planStr}</td>
+          <td>${row.score.toFixed(6)}</td>
+          <td>${row.fatigue.toFixed(4)}</td>
+          <td>${row.disturb.toFixed(4)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      tableWrap.appendChild(table);
+      resultDiv.appendChild(tableWrap);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('gen-days').addEventListener('click', generateCandidateDays);
+      document.getElementById('calc-btn').addEventListener('click', calculate);
+      renderProbTable();
+    });
+  </script>
+</body>
+</html>
