@@ -300,6 +300,10 @@
           <label for="beta">β：休假被打扰权重</label>
           <input id="beta" type="number" step="0.1" min="0.1" max="10" value="1.0" />
         </div>
+        <div class="field">
+          <label for="gamma">γ：上班清静（轻松）权重</label>
+          <input id="gamma" type="number" step="0.1" min="0" max="10" value="1.0" />
+        </div>
       </div>
     </div>
 
@@ -572,13 +576,17 @@
       return res;
     }
 
-    function score(plan, probs, alpha, beta, globalStartStr, globalEndStr, holidayStartStr, holidayEndStr) {
+    // 打分函数：score = γ * comfort - α * fatigue - β * disturb
+    // 其中 comfort = 上班日同事休假比例之和（仅统计有输入概率的候选日）
+    function score(plan, probs, alpha, beta, gamma, globalStartStr, globalEndStr, holidayStartStr, holidayEndStr) {
       const blocks = work(plan, globalStartStr, globalEndStr, holidayStartStr, holidayEndStr);
       const fatigue = blocks.reduce((acc, n) => acc + w(n), 0);
       const disturb = plan.reduce((acc, d) => acc + (1 - (probs[d] ?? 0)), 0);
-      const totalCost = alpha * fatigue + beta * disturb;
-      const sc = 1.0 / totalCost;
-      return { score: sc, fatigue, disturb };
+      // 上班日：候选日期中未被选为年假的那些天
+      const workDays = candidateDays.filter(d => !plan.includes(d));
+      const comfort = workDays.reduce((acc, d) => acc + (probs[d] ?? 0), 0);
+      const totalScore = gamma * comfort - alpha * fatigue - beta * disturb;
+      return { score: totalScore, fatigue, disturb, comfort };
     }
 
     function calculate() {
@@ -605,12 +613,16 @@
         return;
       }
 
-      const alpha = parseFloat(document.getElementById('alpha').value) || 1.0;
-      const beta = parseFloat(document.getElementById('beta').value) || 1.0;
-      if (alpha <= 0 || beta <= 0) {
-        alert('α 和 β 必须为正数。');
+      const alphaVal = parseFloat(document.getElementById('alpha').value);
+      const betaVal = parseFloat(document.getElementById('beta').value);
+      const gammaVal = parseFloat(document.getElementById('gamma').value);
+      if (!Number.isFinite(alphaVal) || alphaVal <= 0 || !Number.isFinite(betaVal) || betaVal <= 0 || !Number.isFinite(gammaVal) || gammaVal < 0) {
+        alert('请为 α、β、γ 填写合法的数值（α、β>0，γ≥0）。');
         return;
       }
+      const alpha = alphaVal;
+      const beta = betaVal;
+      const gamma = gammaVal;
 
       const holidayStart = parseDateInput('holiday-start');
       const holidayEnd = parseDateInput('holiday-end');
@@ -638,8 +650,8 @@
       let bestScore = null;
 
       for (const plan of combs) {
-        const { score: sc, fatigue, disturb } = score(plan, probs, alpha, beta, globalStartStr, globalEndStr, holidayStartStr, holidayEndStr);
-        rows.push({ plan, score: sc, fatigue, disturb });
+        const { score: sc, fatigue, disturb, comfort } = score(plan, probs, alpha, beta, gamma, globalStartStr, globalEndStr, holidayStartStr, holidayEndStr);
+        rows.push({ plan, score: sc, fatigue, disturb, comfort });
         if (bestScore === null || sc > bestScore) {
           bestScore = sc;
           bestPlan = plan;
@@ -675,6 +687,7 @@
           <th>Score</th>
           <th>疲劳成本</th>
           <th>被打扰成本</th>
+          <th>上班清静指数</th>
         </tr>
       `;
       table.appendChild(thead);
@@ -689,6 +702,7 @@
           <td>${row.score.toFixed(6)}</td>
           <td>${row.fatigue.toFixed(4)}</td>
           <td>${row.disturb.toFixed(4)}</td>
+          <td>${row.comfort.toFixed(4)}</td>
         `;
         tbody.appendChild(tr);
       }
